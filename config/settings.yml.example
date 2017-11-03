@@ -1,0 +1,9 @@
+application_mode: 'HQ'
+protocol: 'http'
+location_id: 356
+main_ebrs_app: /var/www/ebrs_hq_dev
+sync_protocol: 'http'
+sync_host: 0.0.0.0:5984
+sync_database: ebrs_hq_dev
+sync_username: root
+sync_password: password

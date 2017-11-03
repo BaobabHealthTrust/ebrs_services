@@ -1,0 +1,2 @@
+module EbrsMetadata
+end

@@ -1,0 +1,21 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  username: root 
+  password: password
+  host: localhost
+
+development:
+  <<: *default
+  database: ebrs_hq
+
+test:
+  <<: *default
+  database: ebrs2_hq_test
+
+production:
+  <<: *default
+  database: ebrs_hq_real
+  username: root
+  password: password

@@ -1,0 +1,17 @@
+development: &development
+  protocol: 'http'
+  host: localhost
+  port: 5984
+  prefix: ebrs_hq
+  suffix: dev
+  username: root
+  password: password
+  crtkey: password
+test:
+  <<: *development
+  suffix: test
+
+production:
+  <<: *development
+  protocol: 'http'
+  suffix: dev
