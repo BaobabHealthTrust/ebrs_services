@@ -1,7 +1,7 @@
 require 'rest-client'
 require "yaml"
 
-ActiveRecord::Base.logger.level = 3
+#ActiveRecord::Base.logger.level = 3
 
 couch_mysql_path = Dir.pwd + "/config/couchdb.yml"
 db_settings = YAML.load_file(couch_mysql_path)
@@ -128,5 +128,25 @@ FileUtils.touch("#{SETTINGS['main_ebrs_app']}/public/tap_sentinel")
 cseq = CouchdbSequence.last
 cseq.seq = seq
 cseq.save
+
+errored = (`ls #{SETTINGS['main_ebrs_app']}/public/errors`.split("\n") rescue []) - ['test']
+
+if errored.length > 0
+  puts "Attempting to fix #{errored.length} failures"
+
+  errored.each do |e|
+   e_seq = (e.to_s.scan(/\d+/).first - 1) rescue nil
+    next if e_seq.blank?
+    err_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=1&since=#{e_seq}"
+    
+    data = JSON.parse(RestClient.get(err_link))
+   puts data['results'].length
+    (data['results'] || []).each do |result|
+      puts result['doc'].inspect
+      `rm #{SETTINGS['main_ebrs_app']}/public/sites/#{e}`
+      Methods.update_doc(result['doc'], seq) rescue next
+     end
+  end 
+end 
 
 ActiveRecord::Base.logger.level = 1
