@@ -135,7 +135,7 @@ if errored.length > 0
   puts "Attempting to fix #{errored.length} failures"
 
   errored.each do |e|
-   e_seq = (e.to_s.scan(/\d+/).first - 1) rescue nil
+   e_seq = (e.to_s.scan(/\d+/).first.to_i - 1) rescue nil
     next if e_seq.blank?
     err_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=1&since=#{e_seq}"
     
