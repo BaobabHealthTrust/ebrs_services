@@ -53,5 +53,46 @@ files = Dir.glob( File.join("#{SETTINGS['main_ebrs_app']}/public/sites", '**', '
 
 end
 
+
+    @last_twelve_months_reported_births = {}
+    last_year = Date.today.ago(11.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
+    curr_year = Date.today.strftime('%Y-%m-%d 23:59:59') 
+    
+    location_tag = LocationTag.where(name: 'District').first
+
+    locations = Location.group("location.location_id").where("parent_location IS NULL AND t.location_tag_id = ?",
+      location_tag.id).joins("INNER JOIN location_tag_map m 
+      ON m.location_id = location.location_id
+      INNER JOIN location_tag t 
+      ON t.location_tag_id = m.location_tag_id").order("location.location_id ASC")
+
+    (locations || []).each_with_index do |l, i|
+      district_code = l.code
+      if @last_twelve_months_reported_births[district_code].blank?
+        @last_twelve_months_reported_births[district_code] = {} 
+      end
+    end
+
+    @stats_months = []
+
+    (0.upto(11)).each_with_index do |num, i|
+      start_date  = Date.today.ago(num.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
+      end_date    = start_date.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')
+      @stats_months << "#{start_date.to_date.month}#{start_date.to_date.year}".to_i #end_date.to_date.month
+
+      (@last_twelve_months_reported_births.keys || []).each do |code|
+        details = PersonBirthDetail.where("date_reported BETWEEN ? AND ?
+          AND LEFT(district_id_number,#{code.length}) = ?",
+          start_date, end_date, code).count
+
+        @last_twelve_months_reported_births[code]["#{start_date.to_date.month}#{start_date.to_date.year}".to_i] = details
+      end
+    end
+
+   File.open("#{SETTINGS['main_ebrs_app']}/dashboard_data.json", 'w'){|f| 
+	f.write({"last_twelve_months_reported_births" => @last_twelve_months_reported_births, "stats_months" => @stats_months}.to_json)
+   }
+
+
 FileUtils.touch("#{SETTINGS['main_ebrs_app']}/public/ping_sentinel")
 

@@ -140,11 +140,10 @@ if errored.length > 0
     err_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=1&since=#{e_seq}"
     
     data = JSON.parse(RestClient.get(err_link))
-   puts data['results'].length
     (data['results'] || []).each do |result|
       puts result['doc'].inspect
-      `rm #{SETTINGS['main_ebrs_app']}/public/sites/#{e}`
-      Methods.update_doc(result['doc'], seq) rescue next
+      `rm #{SETTINGS['main_ebrs_app']}/public/errors/#{e}`
+      Methods.update_doc(result['doc'], e_seq) rescue next
      end
   end 
 end 
