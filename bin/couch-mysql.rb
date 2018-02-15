@@ -143,7 +143,7 @@ if errored.length > 0
    puts data['results'].length
     (data['results'] || []).each do |result|
       puts result['doc'].inspect
-      `rm #{SETTINGS['main_ebrs_app']}/public/sites/#{e}`
+      `rm #{SETTINGS['main_ebrs_app']}/public/errors/#{e}`
       Methods.update_doc(result['doc'], seq) rescue next
      end
   end 
