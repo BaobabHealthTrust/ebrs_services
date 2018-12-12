@@ -18,7 +18,7 @@ couch_protocol = couch_db_settings["protocol"]
 couch_username = couch_db_settings["username"]
 couch_password = couch_db_settings["password"]
 couch_host = couch_db_settings["host"]
-couch_db = "#{couch_db_settings["prefix"]}_#{couch_db_settings["suffix"]}"
+couch_db = "#{couch_db_settings["prefix"]}_#{couch_db_settings["suffix"]}".gsub(/^\_+|_+$/, "")
 couch_port = couch_db_settings["port"]
 
 couch_mysql_path = Dir.pwd + "/config/database.yml"
@@ -90,12 +90,12 @@ class Methods
       begin
         self.angry_save(doc, seq)
       rescue => e
-        puts e.to_s
-        id = "#{seq}"
-        open("#{SETTINGS['main_ebrs_app']}/public/errors/#{id}", 'a') do |f|
-          f << "#{doc['change_agent']}"
-          f << "\n\n#{e}"
-        end
+      	 ErrorRecords.create(
+          person_id: person_id,
+          table_name: doc['change_agent'],
+          data: e,
+          passed: 0
+        )
       end
     end
   end
@@ -110,7 +110,7 @@ end
 seq = 0 if seq.blank?
 
 changes_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=500&since=#{seq}"
-
+#puts changes_link
 data = JSON.parse(RestClient.get(changes_link))
 if (data['results'].count rescue 0) > 0
   puts "Loading  #{(data['results'].count rescue 0)} records"
@@ -142,8 +142,8 @@ if errored.length > 0
     data = JSON.parse(RestClient.get(err_link))
     (data['results'] || []).each do |result|
       puts result['doc'].inspect
-      `rm #{SETTINGS['main_ebrs_app']}/public/errors/#{e}`
-      Methods.update_doc(result['doc'], e_seq) rescue next
+      #`rm #{SETTINGS['main_ebrs_app']}/public/errors/#{e}`
+      Methods.update_doc(result['doc'], e_seq) # rescue next
      end
   end 
 end 

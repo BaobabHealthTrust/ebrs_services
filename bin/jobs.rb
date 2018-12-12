@@ -96,3 +96,32 @@ end
 
 FileUtils.touch("#{SETTINGS['main_ebrs_app']}/public/ping_sentinel")
 
+available = false
+url = YAML.load_file("#{SETTINGS['main_ebrs_app']}/config/settings.yml")["query_by_nid_address"]
+remote_data = JSON.parse(RestClient.post(url, "RRJ5QAE4".to_json, content_type: "application/json", accept: "json")) rescue nil
+if !remote_data.blank? && remote_data.has_key?("FirstName")
+    available = true
+end
+
+File.open("#{SETTINGS['main_ebrs_app']}/public/nris_status", 'w'){|f|
+    f.write(available)
+}
+
+PersonRecordStatus.find_by_sql(
+    "SELECT prs.person_record_status_id FROM person_record_statuses prs
+    LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
+    WHERE prs.created_at < prs2.created_at").map(&:person_record_status_id).each{|s|
+
+    prs  = PersonRecordStatus.find(s)
+    prs.voided = 1
+    prs.save
+}
+
+stats       = PersonRecordStatus.stats
+
+File.open("#{SETTINGS['main_ebrs_app']}/stats.json", 'w'){|f|
+  f.write(stats.to_json)
+}
+
+
+
