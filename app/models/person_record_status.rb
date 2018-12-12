@@ -66,7 +66,7 @@ class PersonRecordStatus < ActiveRecord::Base
   def self.stats(types=['Normal', 'Adopted', 'Orphaned', 'Abandoned'], approved=true, locations = [])
 
     status_map          = Status.all.inject({}) { |r, d| r[d.id] = d.name; r }
-    result = {}
+    result = Status.all.inject({}) { |r, d| r[d.name] = 0; r }
     birth_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
     loc_str = ""
     if !locations.blank?
@@ -76,7 +76,7 @@ class PersonRecordStatus < ActiveRecord::Base
     PersonRecordStatus.find_by_sql("
       SELECT s.status_id, COUNT(*) c FROM person_record_statuses s
         INNER JOIN person_birth_details p ON p.person_id = s.person_id AND p.birth_registration_type_id IN (#{birth_type_ids.join(', ')})
-        WHERE s.voided = 0
+        WHERE s.voided = 0 #{loc_str}
         GROUP BY s.status_id
     ").each do |row|
       result[status_map[row['status_id']]] = row['c']

@@ -53,6 +53,7 @@ files = Dir.glob( File.join("#{SETTINGS['main_ebrs_app']}/public/sites", '**', '
 
 end
 
+=begin
 
     @last_twelve_months_reported_births = {}
     last_year = Date.today.ago(11.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
@@ -92,6 +93,7 @@ end
    File.open("#{SETTINGS['main_ebrs_app']}/dashboard_data.json", 'w'){|f| 
 	f.write({"last_twelve_months_reported_births" => @last_twelve_months_reported_births, "stats_months" => @stats_months}.to_json)
    }
+=end
 
 
 FileUtils.touch("#{SETTINGS['main_ebrs_app']}/public/ping_sentinel")
