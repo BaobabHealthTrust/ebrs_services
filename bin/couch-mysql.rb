@@ -50,7 +50,7 @@ class Methods
         if !record.blank?
           record.update_columns(data)
         else
-          record =  eval($models[table]).create(data) rescue nil
+          record =  eval($models[table]).create(data) #rescue nil
 
           if record.blank? || record == false
             id = "#{seq}"
@@ -66,8 +66,6 @@ class Methods
   def self.update_doc(doc, seq)
 
     person_id = doc['_id']
-    change_agent = doc['change_agent']
-
     if doc['change_location_id'].present? && (doc['change_location_id'].to_s != $settings['location_id'].to_s)
       temp = {}
       if !doc['ip_addresses'].blank? && !doc['district_id'].blank?
